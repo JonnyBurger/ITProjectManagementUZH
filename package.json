@@ -1,0 +1,23 @@
+{
+  "name": "ITProjectManagementUZH",
+  "version": "1.0.0",
+  "description": "Project organization class",
+  "main": "reader.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JonnyBurger/ITProjectManagementUZH.git"
+  },
+  "keywords": [],
+  "author": "Jonny <jonathanburger11@gmail.com> (http://jonny.io)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JonnyBurger/ITProjectManagementUZH/issues"
+  },
+  "homepage": "https://github.com/JonnyBurger/ITProjectManagementUZH#readme",
+  "dependencies": {
+    "underscore": "^1.8.3"
+  }
+}
