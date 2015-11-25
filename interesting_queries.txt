@@ -1,0 +1,1 @@
+($0, emit) => { for (var i = 0; i < $0.text.length; i = i+5) { if ($0.text[i].match(/[a-z0-9A-Z]/)) { emit($0.text[i].toUpperCase(), 1) } } }

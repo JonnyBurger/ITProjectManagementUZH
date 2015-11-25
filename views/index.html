@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Twitterlyse</title>
+	<link rel="stylesheet" href="/static/css/main.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"  crossorigin="anonymous">
+</head>
+<body>
+	<div id="rows">
+		<div id="upper">
+			<div id="header">
+				<div id="bird"><img src="/static/img/bird-small.png" alt="Not affiliated with Twitter"></div>
+				<div id="twitterlyse">Twitterlyse</div>
+			</div>
+			<div id="upper-left">
+				<label for="inputmap" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+					<span>Map function:</span>
+					<div class="dropdown template-dropdown">
+						<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+							Select template:
+						<span class="caret"></span>
+						</div>
+						<ul class="dropdown-menu pull-right" aria-labelledby="dropdownMenu1">
+							<li><a data-formula="(tweet, emit) => emit(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][tweet.date.getDay()], tweet.text.indexOf(':)') >= 0)" href="#">:)-Emoticons during weekdays</a></li>
+							<li><a data-formula="($0, emit) => { for (var i = 0; i < $0.text.length; i = i+5) { if ($0.text[i].match(/[a-z0-9A-Z]/)) { emit($0.text[i].toUpperCase(), 1) } } }" href="#">Distribution of letters</a></li>
+							<li><a href="#">Something else here</a></li>
+							<li role="separator" class="divider"></li>
+							<li><a href="#">Separated link</a></li>
+						</ul>
+					</div>
+					</label>
+				<input id="inputmap" type="text" value="(tweet, emit) => emit(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][tweet.date.getDay()], tweet.text.indexOf(':)') >= 0)">
+				<br>
+				<label for="inputreduce">Reduce function:</label>
+				<input id="inputreduce"  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" type="text" value="(key, val) => val.reduce((a,b) => a+b)"><br>
+				<button class="btn primary-btn" id="hit">Analyse</button>
+			</div>
+			<div id="upper-right">
+				<div id="upper-right-intro">
+					<h2>Welcome to Twitterlyse!</h2>
+					<p>Twitterlyse allows you to run advanced queries against millions of tweets and get interesting statistics within seconds, not hours.</p>
+					<br>
+					<p>Choose examples from the dropdowns or write your own <code>map</code> and <code>reduce</code> functions in Javascript! Do whatever you want with the exposed <code>tweet.date</code> and <code>tweet.text</code> data. Learn more about the map-reduce pattern <a href="https://docs.mongodb.org/manual/tutorial/map-reduce-examples/" target="_blank">here</a>.</p>
+				</div>
+				<div id="upper-right-progress">
+					<p>Already analyzed over </p><br>
+					<div id="tweetcount">0</div><br>
+					<p>tweets!</p>
+				</div>
+			</div>
+		</div>
+		<div id="lower">
+			<div id="lower-stats"></div>
+		</div>
+	</div>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+		var socket = io();
+		socket.on('message', function (response) {
+			if (response.type == 'progress') {
+				$('#tweetcount').text(response.count);
+			}
+			if (response.type == 'end') {
+				visualizeTweets(response.results);
+			}
+		});
+		$('#hit').click(function () {
+			socket.emit('code', {
+				map: $('#inputmap').val(),
+				reduce: $('#inputreduce').val()
+			});
+			$('#upper-right-progress').show();
+			$('#upper-right-intro').hide();
+		});
+		function getMaxValue(results) {
+			var max = -Infinity;
+			$.each(results, function (key, value) {
+				if (value > max) {
+					max = value;
+				}
+			});
+			return max;
+		}
+
+		function visualizeTweets(results) {
+			$('#lower-stats').empty();
+			results = results || {"Mon":10385,"Tue":12443,"Wed":12612,"Thu":13408,"Fri":13037,"Sat":13778,"Sun":10745}
+			var max = getMaxValue(results);
+			var keycount = 0;
+			$.each(Object.keys(results), function (_, key) {
+				var val = results[key];
+				var statpoint = $('<div class="stat-point">')
+				var statpointbar = $('<div class="stat-point-bar">')
+				statpointbar.appendTo(statpoint);
+
+				var statpointbarbar = $('<div class="stat-point-bar-bar">')
+					.height(100*(val / max )+ '%')
+					.attr('data-value', val)
+					.appendTo(statpointbar);
+
+				var statpointlabel = $('<div class="stat-point-label">').appendTo(statpoint);
+				var statpointlabeltext = $('<div class="stat-point-label-text">').text(Object.keys(results)[_]).appendTo(statpointlabel);
+
+				statpoint.appendTo('#lower-stats');
+				if (keycount != (Object.keys(results).length - 1)) {
+					var statpointconnector = $('<div class="stat-point-connector">')
+					statpointconnector.css('bottom', 100*(val / max )+ '%');
+					var nextNumber = results[Object.keys(results)[_+1]];
+					var hypo1 = $('#lower-stats').width() / Object.keys(results).length;
+					var hypo2 = $('.stat-point-bar').eq(0).height() * (nextNumber - val) / max;
+					var width = Math.sqrt(hypo1 * hypo1 + hypo2 * hypo2);
+					var extrawidth = width - hypo1;
+					var angle = 0 - Math.atan(hypo2 / hypo1)*(180/Math.PI);
+					statpointconnector.css({
+						'width': width + 'px',
+						'transform': 'rotate(' + angle + 'deg) translateY(' + ((0-(hypo2 / 2)) + 10) +'px) translateX(' + (extrawidth/2) + 'px)'
+					});
+					statpointbar.append(statpointconnector);
+				}
+				keycount++;
+			});
+			window.onresize = function () {
+				visualizeTweets(results);
+			}
+		}
+		visualizeTweets()
+	</script>
+	<script>
+		$('label[for="inputmap"] ul li a').click(function () {
+			$('#inputmap').val($(this).attr('data-formula'));
+		});
+	</script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"  crossorigin="anonymous"></script>
+</body>
+</html>
