@@ -87,6 +87,11 @@ label {
   padding-top: 46px;
   margin-bottom: -46px;
 }
+@media screen and (max-width: 768px) {
+  #rows #upper {
+    display: block;
+  }
+}
 #rows #upper #upper-left {
   -webkit-flex: 1;
       -ms-flex: 1;
@@ -151,6 +156,7 @@ label {
   height: 100%;
   margin: auto;
   padding-top: 30px;
+  position: relative;
 }
 #rows #lower #lower-stats .stat-point {
   -webkit-flex: 1;
@@ -187,9 +193,9 @@ label {
   padding-top: 10px;
 }
 #rows #lower #lower-stats .stat-point .stat-point-bar {
-  -webkit-flex: 6;
-      -ms-flex: 6;
-          flex: 6;
+  -webkit-flex: 5;
+      -ms-flex: 5;
+          flex: 5;
   display: inline-block;
   position: relative;
 }
@@ -199,7 +205,7 @@ label {
   position: absolute;
   left: 50%;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.05);
+  background: transparent;
 }
 #rows #lower #lower-stats .stat-point .stat-point-bar .stat-point-bar-bar:before {
   content: '';
@@ -236,4 +242,37 @@ label {
   height: 2px;
   left: 50%;
   margin-left: 2px;
+}
+#rows #lower #lower-stats .vert-line-container {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+#rows #lower #lower-stats .vert-line-container .vert-line {
+  -webkit-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: 10px;
+}
+#rows #lower #lower-stats .vert-line-container .vert-line:after {
+  content: attr(data-number);
+  position: absolute;
+  font-size: 8px;
+  right: 0;
+  font-weight: bold;
+  color: #66757f;
+  margin-top: -12px;
+  opacity: 0.8;
+}
+#rows #lower #lower-stats .vert-line-container .vert-line:last-child,
+#rows #lower #lower-stats .vert-line-container .vert-line:nth-last-child(2) {
+  border-top: 1px solid transparent;
 }

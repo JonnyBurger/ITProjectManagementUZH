@@ -16,25 +16,36 @@
 			</div>
 			<div id="upper-left">
 				<label for="inputmap" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-					<span>Map function:</span>
+					<span>Map function: <code>(tweet, emit) =></code></span>
 					<div class="dropdown template-dropdown">
 						<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
 							Select template:
 						<span class="caret"></span>
 						</div>
 						<ul class="dropdown-menu pull-right" aria-labelledby="dropdownMenu1">
-							<li><a data-formula="(tweet, emit) => emit(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][tweet.date.getDay()], tweet.text.indexOf(':)') >= 0)" href="#">:)-Emoticons during weekdays</a></li>
-							<li><a data-formula="($0, emit) => { for (var i = 0; i < $0.text.length; i = i+5) { if ($0.text[i].match(/[a-z0-9A-Z]/)) { emit($0.text[i].toUpperCase(), 1) } } }" href="#">Distribution of letters</a></li>
-							<li><a href="#">Something else here</a></li>
-							<li role="separator" class="divider"></li>
-							<li><a href="#">Separated link</a></li>
+							<li><a data-formula="emit(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][tweet.date.getDay()], tweet.text.indexOf(':)') >= 0)" href="#">:)-Emoticons during weekdays</a></li>
+							<li><a data-formula="for (var i = 0; i < tweet.text.length; i = i+5) { if (tweet.text[i].match(/[a-z0-9A-Z]/)) { emit(tweet.text[i].toUpperCase(), 1) } }" href="#">Distribution of A-Z</a></li>
+							<li><a data-formula="emit(tweet.date.getHours(), tweet.text.indexOf('good mornin') >= 0)" href="#">Good morning Tweets</a></li>
 						</ul>
 					</div>
 					</label>
-				<input id="inputmap" type="text" value="(tweet, emit) => emit(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][tweet.date.getDay()], tweet.text.indexOf(':)') >= 0)">
+				<input id="inputmap" type="text" value="emit(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][tweet.date.getDay()], tweet.text.indexOf(':)') >= 0)">
 				<br>
-				<label for="inputreduce">Reduce function:</label>
-				<input id="inputreduce"  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" type="text" value="(key, val) => val.reduce((a,b) => a+b)"><br>
+				<label for="inputreduce">
+					<span>Reduce function: <code>(key, val) =></code></span>
+					<div class="dropdown template-dropdown">
+						<div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+							Select template:
+						<span class="caret"></span>
+						</div>
+						<ul class="dropdown-menu pull-right" aria-labelledby="dropdownMenu2">
+							<li><a data-formula="val.reduce((a,b) => a+b)" href="#">Sum</a></li>
+							<li><a data-formula="val.reduce((a,b) => a+b) / val.length * 100" href="#">Percentage</a></li>
+							<li><a data-formula="val.reduce((a,b) => a+b) / val.length" href="#">Average</a></li>
+						</ul>
+					</div>
+				</label>
+				<input id="inputreduce" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" type="text" value="val.reduce((a,b) => a+b)"><br>
 				<button class="btn primary-btn" id="hit">Analyse</button>
 			</div>
 			<div id="upper-right">
@@ -42,7 +53,8 @@
 					<h2>Welcome to Twitterlyse!</h2>
 					<p>Twitterlyse allows you to run advanced queries against millions of tweets and get interesting statistics within seconds, not hours.</p>
 					<br>
-					<p>Choose examples from the dropdowns or write your own <code>map</code> and <code>reduce</code> functions in Javascript! Do whatever you want with the exposed <code>tweet.date</code> and <code>tweet.text</code> data. Learn more about the map-reduce pattern <a href="https://docs.mongodb.org/manual/tutorial/map-reduce-examples/" target="_blank">here</a>.</p>
+					<p>Choose examples from the dropdowns or write your own <code>map</code> and <code>reduce</code> functions in Javascript! Do whatever you want with the exposed <code>tweet.date</code> and <code>tweet.text</code> data. Learn more about the map-reduce pattern <a href="https://docs.mongodb.org/manual/tutorial/map-reduce-examples/" target="_blank">here</a>.</p><br>
+					<p>This is a project for the IT project management course at the University Zurich – find the source <a href="https://github.com/JonnyBurger/ITProjectManagementUZH" target="_blank">here</a>.</p>
 				</div>
 				<div id="upper-right-progress">
 					<p>Already analyzed over </p><br>
@@ -87,7 +99,6 @@
 
 		function visualizeTweets(results) {
 			$('#lower-stats').empty();
-			results = results || {"Mon":10385,"Tue":12443,"Wed":12612,"Thu":13408,"Fri":13037,"Sat":13778,"Sun":10745}
 			var max = getMaxValue(results);
 			var keycount = 0;
 			$.each(Object.keys(results), function (_, key) {
@@ -122,15 +133,27 @@
 				}
 				keycount++;
 			});
+			var vertlinecontainer = $('<div class="vert-line-container">');
+			var lines = 12
+			for (var i = 0; i < 12; i++) {
+				var vertline = $('<div class="vert-line">');
+				vertline.appendTo(vertlinecontainer);
+				if (i < 10) {
+					vertline.attr('data-number', Math.round((max/10) * (10-i) * 10) / 10)
+				}
+			}
+			vertlinecontainer.appendTo('#lower-stats')
 			window.onresize = function () {
 				visualizeTweets(results);
 			}
 		}
-		visualizeTweets()
 	</script>
 	<script>
 		$('label[for="inputmap"] ul li a').click(function () {
 			$('#inputmap').val($(this).attr('data-formula'));
+		});
+		$('label[for="inputreduce"] ul li a').click(function () {
+			$('#inputreduce').val($(this).attr('data-formula'));
 		});
 	</script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"  crossorigin="anonymous"></script>

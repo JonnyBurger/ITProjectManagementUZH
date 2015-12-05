@@ -17,8 +17,8 @@ http.listen(process.env.PORT || 9999, () => {
 io.on('connection', function (socket) {
 	socket.on('code', $0 => {
 		reader.mapTweets(
-			eval($0.map),
-			eval($0.reduce),
+			new Function('tweet', 'emit', $0.map),
+			new Function('key', 'val', 'return ' + $0.reduce),
 		 	(response) => { socket.emit('message', response) }
 		);
 	});

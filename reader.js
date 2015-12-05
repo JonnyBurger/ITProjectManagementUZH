@@ -25,7 +25,7 @@ exports.mapTweets = function(map, reduce, callback) {
 			date: date,
 			text: text
 		}, (key, val) => {
-			if (!key || !val || key == 'undefined') return;
+			if (!key || key == 'undefined') return;
 			if (!results[key]) {
 				results[key] = [];
 			}
