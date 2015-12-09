@@ -76,6 +76,7 @@ label {
       -ms-flex: 1;
           flex: 1;
   display: block;
+  min-height: 400px;
 }
 #rows #upper {
   display: -webkit-flex;
